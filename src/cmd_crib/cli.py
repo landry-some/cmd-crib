@@ -9,6 +9,7 @@ from collections import Counter
 from pathlib import Path
 
 from . import __version__
+from .add import add_entry
 from .notes import Entry, load_dir
 from .search import search
 
@@ -88,8 +89,37 @@ def run_lookup(argv: list[str]) -> int:
     return 0
 
 
+def add_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="crib add",
+        description="Append an entry to TOPIC.md in your notes folder.",
+        epilog="Quote the command to keep its own quotes: "
+               "crib add git 'Find removed line' 'git log -S \"name\" --oneline'",
+    )
+    parser.add_argument("topic", help="topic file to add to, without .md (created if missing)")
+    parser.add_argument("title", help="the entry heading, what you'll search for later")
+    parser.add_argument("command", nargs="+", help="the command; several words are joined with spaces")
+    parser.add_argument("-m", "--note", help="a one-line note to keep with the command")
+    parser.add_argument("--dir", type=Path, help="notes folder (default: $CRIB_DIR or ~/.config/crib/notes)")
+    return parser
+
+
+def run_add(argv: list[str]) -> int:
+    args = add_parser().parse_args(argv)
+    notes_dir = args.dir.expanduser() if args.dir else default_notes_dir()
+    try:
+        path, line = add_entry(notes_dir, args.topic, args.title, " ".join(args.command), args.note)
+    except ValueError as exc:
+        print(f"crib add: {exc}", file=sys.stderr)
+        return 2
+    print(f"added to {path}:{line}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "add":
+        return run_add(argv[1:])
     return run_lookup(argv)
 
 
