@@ -95,3 +95,10 @@ def test_crlf_and_bom_are_accepted(tmp_path):
 def test_bom_before_first_heading():
     (entry,) = parse_text("﻿## Top\n`ls`\n", "sh", Path("sh.md"))
     assert entry.title == "Top"
+
+
+def test_non_utf8_file_is_skipped_with_warning(tmp_path, capsys):
+    (tmp_path / "bad.md").write_bytes("## Caf\xe9\n`ls`\n".encode("latin-1"))
+    (tmp_path / "good.md").write_text("## Status\n`git status`\n", encoding="utf-8")
+    assert [e.title for e in load_dir(tmp_path)] == ["Status"]
+    assert capsys.readouterr().err == f"crib: warning: skipping {tmp_path / 'bad.md'}: not valid UTF-8\n"

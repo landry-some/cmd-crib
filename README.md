@@ -42,7 +42,8 @@ Inside a file, every `## heading` starts an entry. Under it:
 
 Text before the first `##` heading (a `# title`, an intro) is ignored. Files are
 read as UTF-8; CRLF line endings and a byte order mark are fine, and `crib add`
-keeps a file's CRLF endings.
+keeps a file's CRLF endings. A file that is not valid UTF-8 is skipped with a
+warning, and `crib add` refuses to change it.
 
 ````markdown
 # git

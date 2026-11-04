@@ -79,3 +79,10 @@ def test_append_to_crlf_file_with_bom_keeps_crlf(tmp_path):
     )
     assert line == 4
     assert [e.title for e in load_dir(tmp_path)] == ["Status", "Short log"]
+
+
+def test_add_refuses_non_utf8_file(tmp_path, capsys):
+    (tmp_path / "old.md").write_bytes(b"## Caf\xe9\n")
+    assert main(["add", "--dir", str(tmp_path), "old", "Title", "cmd"]) == 2
+    assert "not valid UTF-8" in capsys.readouterr().err
+    assert (tmp_path / "old.md").read_bytes() == b"## Caf\xe9\n"

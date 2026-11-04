@@ -9,6 +9,7 @@ Everything else under the heading is kept as free-text notes.
 from __future__ import annotations
 
 import re
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -25,6 +26,10 @@ class Entry:
     line: int
     commands: list[str] = field(default_factory=list)
     notes: str = ""
+
+
+def warn(message: str) -> None:
+    print(f"crib: warning: {message}", file=sys.stderr)
 
 
 def parse_text(text: str, topic: str, path: Path) -> list[Entry]:
@@ -80,9 +85,16 @@ def parse_text(text: str, topic: str, path: Path) -> list[Entry]:
 
 
 def load_dir(notes_dir: Path) -> list[Entry]:
-    """Parse every ``*.md`` file directly inside ``notes_dir``, sorted by name."""
+    """Parse every ``*.md`` file directly inside ``notes_dir``, sorted by name.
+
+    A file that is not valid UTF-8 is skipped with a warning on stderr.
+    """
     entries: list[Entry] = []
     for path in sorted(notes_dir.glob("*.md")):
-        text = path.read_text(encoding="utf-8")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            warn(f"skipping {path}: not valid UTF-8")
+            continue
         entries.extend(parse_text(text, path.stem, path))
     return entries

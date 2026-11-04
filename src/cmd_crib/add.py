@@ -40,7 +40,10 @@ def add_entry(notes_dir: Path, topic: str, title: str, command: str,
 
     notes_dir.mkdir(parents=True, exist_ok=True)
     path = notes_dir / f"{topic}.md"
-    existing = path.read_text(encoding="utf-8", newline="") if path.exists() else f"# {topic}\n"
+    try:
+        existing = path.read_text(encoding="utf-8", newline="") if path.exists() else f"# {topic}\n"
+    except UnicodeDecodeError:
+        raise ValueError(f"{path} is not valid UTF-8, not touching it") from None
     newline = "\r\n" if "\r\n" in existing else "\n"
     existing = existing.replace("\r\n", "\n")
 

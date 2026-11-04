@@ -87,3 +87,11 @@ def test_default_dir_uses_xdg_config(monkeypatch, tmp_path):
     monkeypatch.delenv("CRIB_DIR", raising=False)
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
     assert default_notes_dir() == tmp_path / "crib" / "notes"
+
+
+def test_lookup_still_works_next_to_non_utf8_file(notes, capsys):
+    (notes / "old.md").write_bytes(b"## Extract\n\xff\n")
+    code, out, err = run(capsys, "--dir", str(notes), "-c", "extract")
+    assert code == 0
+    assert out == "tar xf archive.tar\n"
+    assert "skipping" in err and "old.md" in err
