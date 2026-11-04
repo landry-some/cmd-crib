@@ -35,31 +35,48 @@ def warn(message: str) -> None:
 def parse_text(text: str, topic: str, path: Path) -> list[Entry]:
     """Split one Markdown file's text into entries.
 
-    CRLF line endings and a leading UTF-8 byte order mark are accepted.
+    CRLF line endings and a leading UTF-8 byte order mark are accepted. A code
+    fence that is never closed gets a warning and ends at the next heading, so
+    the entries after it are not lost.
     """
-    text = text.removeprefix("\ufeff")
+    lines = text.removeprefix("\ufeff").splitlines()
+    fences = [n for n, line in enumerate(lines, start=1) if FENCE.match(line)]
+    unclosed = fences[-1] if len(fences) % 2 else None
+    if unclosed:
+        warn(f"{path}:{unclosed}: code fence is never closed")
+
     entries: list[Entry] = []
     current: Entry | None = None
     note_lines: list[str] = []
     block: list[str] | None = None
+    block_start = 0
 
     def finish() -> None:
         if current is not None:
             current.notes = "\n".join(note_lines).strip()
             entries.append(current)
 
-    for number, line in enumerate(text.splitlines(), start=1):
+    def end_block() -> None:
+        command = "\n".join(block).rstrip()
+        if current is not None and command:
+            current.commands.append(command)
+
+    for number, line in enumerate(lines, start=1):
         if block is not None:
-            if FENCE.match(line):
-                if current is not None and block:
-                    current.commands.append("\n".join(block))
+            if block_start == unclosed and HEADING.match(line):
+                end_block()
                 block = None
+            elif FENCE.match(line):
+                end_block()
+                block = None
+                continue
             else:
                 block.append(line)
-            continue
+                continue
 
         if FENCE.match(line):
             block = []
+            block_start = number
             continue
 
         heading = HEADING.match(line)
@@ -78,8 +95,8 @@ def parse_text(text: str, topic: str, path: Path) -> list[Entry]:
         else:
             note_lines.append(line)
 
-    if block and current is not None:
-        current.commands.append("\n".join(block))
+    if block is not None:
+        end_block()
     finish()
     return entries
 

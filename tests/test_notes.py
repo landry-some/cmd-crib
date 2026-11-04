@@ -68,10 +68,27 @@ def test_inline_code_inside_sentence_is_a_note():
     assert entry.notes == "Use `-r` for folders."
 
 
-def test_unclosed_fence_keeps_rest_as_command():
+def test_unclosed_fence_at_end_warns_and_keeps_command(capsys):
     text = "## Open\n```\necho one\necho two\n"
     (entry,) = parse_text(text, "sh", Path("sh.md"))
     assert entry.commands == ["echo one\necho two"]
+    assert capsys.readouterr().err == "crib: warning: sh.md:2: code fence is never closed\n"
+
+
+def test_unclosed_fence_ends_at_next_heading(capsys):
+    text = ("## Closed\n```\n## literal\n```\n\n"
+            "## Open\n```\necho one\n\n## Next\n`ls`\n\n## Last\nText.\n")
+    closed, open_, next_, last = parse_text(text, "sh", Path("sh.md"))
+    assert closed.commands == ["## literal"]
+    assert open_.commands == ["echo one"]
+    assert (next_.title, next_.line, next_.commands) == ("Next", 10, ["ls"])
+    assert (last.title, last.notes) == ("Last", "Text.")
+    assert "sh.md:7: code fence is never closed" in capsys.readouterr().err
+
+
+def test_closed_fences_do_not_warn(capsys):
+    parse_text(SAMPLE, "git", Path("git.md"))
+    assert capsys.readouterr().err == ""
 
 
 def test_load_dir_uses_file_stem_as_topic(tmp_path):

@@ -37,7 +37,8 @@ A notes folder holds one `.md` file per topic. The file name is the topic:
 Inside a file, every `## heading` starts an entry. Under it:
 
 - a line that is only inline code, like `` `tar tf backup.tgz` ``, is a command;
-- a fenced code block is one command (it can span several lines);
+- a fenced code block is one command (it can span several lines). A fence that
+  is never closed gets a warning and ends at the next `##` heading;
 - any other text is a note, searched and shown as `# ...` under the command.
 
 Text before the first `##` heading (a `# title`, an intro) is ignored. Files are
