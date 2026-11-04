@@ -65,3 +65,13 @@ def test_topic_filter_and_empty_query():
 
 def test_quoted_query_is_split_into_words():
     assert titles(search(ENTRIES, ["cut clip"])) == ["Cut a clip"]
+
+
+def test_tag_filter():
+    a = entry("sh", "Open ports", ["ss -tlnp"])
+    a.tags = ["net", "debug"]
+    b = entry("sh", "Disk usage", ["du -sh"])
+    b.tags = ["disk"]
+    assert titles(search([a, b], [], tag="NET")) == ["Open ports"]
+    assert titles(search([a, b], ["disk"], tag="net")) == []
+    assert titles(search([a, b], ["usage"], tag="disk")) == ["Disk usage"]

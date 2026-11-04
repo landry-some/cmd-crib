@@ -8,7 +8,7 @@ Total: **28 h**
 ## Features (15 h)
 
 - [ ] Fuzzy matching so `crib dckr prune` still finds "docker system prune" (3 h)
-- [ ] Tags on entries (`tags: net, debug` line) and `-T TAG` filter (2 h)
+- [x] Tags on entries (`tags: net, debug` line) and `-T TAG` filter (2 h)
 - [ ] `crib edit QUERY` opens `$EDITOR` at the matching entry's line (1.5 h)
 - [ ] `--copy` puts the top command on the clipboard (wl-copy / xclip / pbcopy) (1.5 h)
 - [ ] `{{placeholder}}` fields in commands, prompted for and filled before printing (2.5 h)

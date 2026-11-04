@@ -34,8 +34,11 @@ def score(entry: Entry, words: list[str]) -> int:
     return total
 
 
-def search(entries: list[Entry], query: list[str], topic: str | None = None) -> list[Entry]:
+def search(entries: list[Entry], query: list[str], topic: str | None = None,
+           tag: str | None = None) -> list[Entry]:
     """Return matching entries, best first.
+
+    ``topic`` and ``tag`` (both case-insensitive) narrow the entries searched.
 
     Ties keep the notes' own order (file name, then position in the file).
     With no query words, every entry matches, so ``crib -t git`` lists a topic.
@@ -43,6 +46,8 @@ def search(entries: list[Entry], query: list[str], topic: str | None = None) -> 
     words = [w.lower() for part in query for w in part.split()]
     if topic is not None:
         entries = [e for e in entries if e.topic.lower() == topic.lower()]
+    if tag is not None:
+        entries = [e for e in entries if tag.lower() in e.tags]
     if not words:
         return list(entries)
 

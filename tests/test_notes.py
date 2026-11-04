@@ -119,3 +119,18 @@ def test_non_utf8_file_is_skipped_with_warning(tmp_path, capsys):
     (tmp_path / "good.md").write_text("## Status\n`git status`\n", encoding="utf-8")
     assert [e.title for e in load_dir(tmp_path)] == ["Status"]
     assert capsys.readouterr().err == f"crib: warning: skipping {tmp_path / 'bad.md'}: not valid UTF-8\n"
+
+
+def test_tags_line_sets_tags_and_is_not_a_note():
+    text = "## Ports\nTags: Net, debug ,, net\n`ss -tlnp`\nListening sockets.\n\n## Plain\n`ls`\n"
+    ports, plain = parse_text(text, "sh", Path("sh.md"))
+    assert ports.tags == ["net", "debug"]
+    assert ports.notes == "Listening sockets."
+    assert ports.commands == ["ss -tlnp"]
+    assert plain.tags == []
+
+
+def test_tags_line_inside_fence_is_part_of_command():
+    (entry,) = parse_text("## Yaml\n```\ntags: a\n```\n", "k8s", Path("k8s.md"))
+    assert entry.tags == []
+    assert entry.commands == ["tags: a"]

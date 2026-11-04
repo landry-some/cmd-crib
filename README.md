@@ -39,6 +39,8 @@ Inside a file, every `## heading` starts an entry. Under it:
 - a line that is only inline code, like `` `tar tf backup.tgz` ``, is a command;
 - a fenced code block is one command (it can span several lines). A fence that
   is never closed gets a warning and ends at the next `##` heading;
+- a line starting with `tags:`, like `tags: net, debug`, gives the entry tags
+  (comma-separated, case-insensitive) for `crib -T`;
 - any other text is a note, searched and shown as `# ...` under the command.
 
 Text before the first `##` heading (a `# title`, an intro) is ignored. Files are
@@ -71,6 +73,7 @@ git show abc1234:src/main.py
 crib WORDS...            show entries matching all the words, best first
 crib -c WORDS...         print only the command(s) of the best match
 crib -t TOPIC [WORDS]    search one topic; with no words, list the whole topic
+crib -T TAG [WORDS]      only search entries tagged TAG; with no words, list them
 crib -n N WORDS...       show at most N results (default 10, 0 for all)
 crib --topics            list topics and how many entries each has
 crib add TOPIC TITLE COMMAND... [-m NOTE]

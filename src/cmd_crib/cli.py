@@ -23,7 +23,10 @@ def default_notes_dir() -> Path:
 
 
 def format_entry(number: int, entry: Entry) -> str:
-    lines = [f"{number}. {entry.topic} / {entry.title}  ({entry.path.name}:{entry.line})"]
+    header = f"{number}. {entry.topic} / {entry.title}  ({entry.path.name}:{entry.line})"
+    if entry.tags:
+        header += f"  [{', '.join(entry.tags)}]"
+    lines = [header]
     for command in entry.commands:
         lines.extend("     " + part for part in command.splitlines())
     for note in entry.notes.splitlines():
@@ -40,6 +43,7 @@ def lookup_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("query", nargs="*", help="words that must all match")
     parser.add_argument("-t", "--topic", help="only search this topic (file name without .md)")
+    parser.add_argument("-T", "--tag", help="only search entries with this tag")
     parser.add_argument("-n", "--limit", type=int, default=10, metavar="N",
                         help="show at most N results (default 10, 0 for all)")
     parser.add_argument("-c", "--command", action="store_true",
@@ -69,7 +73,7 @@ def run_lookup(argv: list[str]) -> int:
             print(f"{topic:<{width}}  {counts[topic]}")
         return 0
 
-    results = search(entries, args.query, topic=args.topic)
+    results = search(entries, args.query, topic=args.topic, tag=args.tag)
     if not results:
         print("crib: no matches", file=sys.stderr)
         return 1

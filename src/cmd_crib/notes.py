@@ -3,7 +3,8 @@
 A notes folder holds one ``*.md`` file per topic (``git.md`` is topic ``git``).
 Inside a file, every ``## heading`` starts an entry. An entry's commands are its
 fenced code blocks and any line made only of inline code (`` `like this` ``).
-Everything else under the heading is kept as free-text notes.
+A ``tags: net, debug`` line gives the entry tags. Everything else under the
+heading is kept as free-text notes.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from pathlib import Path
 HEADING = re.compile(r"^##\s+(.+?)\s*#*\s*$")
 FENCE = re.compile(r"^\s*```")
 INLINE_ONLY = re.compile(r"^\s*`([^`]+)`\s*$")
+TAGS = re.compile(r"^\s*tags:(.*)$", re.IGNORECASE)
 
 
 @dataclass
@@ -26,6 +28,7 @@ class Entry:
     line: int
     commands: list[str] = field(default_factory=list)
     notes: str = ""
+    tags: list[str] = field(default_factory=list)
 
 
 def warn(message: str) -> None:
@@ -87,6 +90,14 @@ def parse_text(text: str, topic: str, path: Path) -> list[Entry]:
             continue
 
         if current is None:
+            continue
+
+        tags = TAGS.match(line)
+        if tags:
+            for tag in tags.group(1).split(","):
+                tag = tag.strip().lower()
+                if tag and tag not in current.tags:
+                    current.tags.append(tag)
             continue
 
         inline = INLINE_ONLY.match(line)

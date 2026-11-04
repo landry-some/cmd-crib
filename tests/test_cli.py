@@ -95,3 +95,16 @@ def test_lookup_still_works_next_to_non_utf8_file(notes, capsys):
     assert code == 0
     assert out == "tar xf archive.tar\n"
     assert "skipping" in err and "old.md" in err
+
+
+def test_tag_flag_filters_and_tags_are_shown(tmp_path, capsys):
+    (tmp_path / "sh.md").write_text(
+        "## Open ports\ntags: net, debug\n`ss -tlnp`\n\n## Disk usage\n`du -sh`\n",
+        encoding="utf-8",
+    )
+    code, out, _ = run(capsys, "--dir", str(tmp_path), "-T", "net")
+    assert code == 0
+    assert out.splitlines() == ["1. sh / Open ports  (sh.md:1)  [net, debug]", "     ss -tlnp"]
+    code, _, err = run(capsys, "--dir", str(tmp_path), "-T", "net", "disk")
+    assert code == 1
+    assert "no matches" in err
