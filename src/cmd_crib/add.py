@@ -25,6 +25,7 @@ def add_entry(notes_dir: Path, topic: str, title: str, command: str,
     """Append an entry to ``<notes_dir>/<topic>.md`` and return (path, heading line).
 
     The folder and file are created if needed. A new file starts with ``# topic``.
+    A file with CRLF line endings keeps them.
     """
     if not TOPIC_NAME.match(topic) or topic.endswith(".md"):
         raise ValueError(f"topic must be a plain name like 'git' or 'docker', got {topic!r}")
@@ -39,7 +40,9 @@ def add_entry(notes_dir: Path, topic: str, title: str, command: str,
 
     notes_dir.mkdir(parents=True, exist_ok=True)
     path = notes_dir / f"{topic}.md"
-    existing = path.read_text(encoding="utf-8") if path.exists() else f"# {topic}\n"
+    existing = path.read_text(encoding="utf-8", newline="") if path.exists() else f"# {topic}\n"
+    newline = "\r\n" if "\r\n" in existing else "\n"
+    existing = existing.replace("\r\n", "\n")
 
     prefix = existing
     if prefix and not prefix.endswith("\n"):
@@ -48,5 +51,6 @@ def add_entry(notes_dir: Path, topic: str, title: str, command: str,
         prefix += "\n"
     heading_line = prefix.count("\n") + 1
 
-    path.write_text(prefix + render_entry(title, command, note), encoding="utf-8")
+    path.write_text(prefix + render_entry(title, command, note), encoding="utf-8",
+                    newline=newline)
     return path, heading_line

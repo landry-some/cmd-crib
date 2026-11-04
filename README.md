@@ -40,7 +40,9 @@ Inside a file, every `## heading` starts an entry. Under it:
 - a fenced code block is one command (it can span several lines);
 - any other text is a note, searched and shown as `# ...` under the command.
 
-Text before the first `##` heading (a `# title`, an intro) is ignored.
+Text before the first `##` heading (a `# title`, an intro) is ignored. Files are
+read as UTF-8; CRLF line endings and a byte order mark are fine, and `crib add`
+keeps a file's CRLF endings.
 
 ````markdown
 # git

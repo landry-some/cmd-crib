@@ -81,3 +81,17 @@ def test_load_dir_uses_file_stem_as_topic(tmp_path):
     entries = load_dir(tmp_path)
     assert [(e.topic, e.title) for e in entries] == [("git", "Status"), ("tar", "Extract")]
     assert entries[0].path == tmp_path / "git.md"
+
+
+def test_crlf_and_bom_are_accepted(tmp_path):
+    (tmp_path / "win.md").write_bytes(
+        b"\xef\xbb\xbf## First\r\n`dir /s`\r\nA note.\r\n\r\n## Second\r\n```\r\necho a\r\necho b\r\n```\r\n"
+    )
+    first, second = load_dir(tmp_path)
+    assert (first.title, first.commands, first.notes) == ("First", ["dir /s"], "A note.")
+    assert (second.title, second.line, second.commands) == ("Second", 5, ["echo a\necho b"])
+
+
+def test_bom_before_first_heading():
+    (entry,) = parse_text("﻿## Top\n`ls`\n", "sh", Path("sh.md"))
+    assert entry.title == "Top"

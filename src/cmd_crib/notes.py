@@ -28,7 +28,11 @@ class Entry:
 
 
 def parse_text(text: str, topic: str, path: Path) -> list[Entry]:
-    """Split one Markdown file's text into entries."""
+    """Split one Markdown file's text into entries.
+
+    CRLF line endings and a leading UTF-8 byte order mark are accepted.
+    """
+    text = text.removeprefix("\ufeff")
     entries: list[Entry] = []
     current: Entry | None = None
     note_lines: list[str] = []

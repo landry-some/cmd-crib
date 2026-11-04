@@ -17,7 +17,7 @@ Total: **28 h**
 
 ## Bugs and edge cases (5 h)
 
-- [ ] Files with CRLF line endings and a UTF-8 BOM (1 h)
+- [x] Files with CRLF line endings and a UTF-8 BOM (1 h)
 - [ ] Unclosed code fence at the end of a file: warn instead of swallowing the rest (1 h)
 - [ ] Non-UTF-8 files: skip with a warning naming the file (0.5 h)
 - [ ] Duplicate titles in one topic: show both, flag in `--check` (1 h)

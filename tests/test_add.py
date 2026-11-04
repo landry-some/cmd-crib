@@ -68,3 +68,14 @@ def test_cli_add_then_lookup(tmp_path, capsys):
 def test_cli_add_bad_topic_exits_2(tmp_path, capsys):
     assert main(["add", "--dir", str(tmp_path), "../x", "Title", "cmd"]) == 2
     assert "topic must be" in capsys.readouterr().err
+
+
+def test_append_to_crlf_file_with_bom_keeps_crlf(tmp_path):
+    path = tmp_path / "win.md"
+    path.write_bytes(b"\xef\xbb\xbf## Status\r\n`git status`\r\n")
+    _, line = add_entry(tmp_path, "win", "Short log", "git log --oneline")
+    assert path.read_bytes() == (
+        b"\xef\xbb\xbf## Status\r\n`git status`\r\n\r\n## Short log\r\n`git log --oneline`\r\n"
+    )
+    assert line == 4
+    assert [e.title for e in load_dir(tmp_path)] == ["Status", "Short log"]
